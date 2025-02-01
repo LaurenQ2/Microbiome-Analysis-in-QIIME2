@@ -72,7 +72,8 @@ qiime dada2 denoise-paired \
 --o-representative-sequences $PWD/analysis/ITS/ITS_rep-seqs.qza \
 --o-denoising-stats $PWD/analysis/ITS/ITS_denoising-stats.qza
 ```
-> Create data visualizations of both of the output files generated in the last step.
+&nbsp;
+> Create data visualizations from the output files generated in the last step.
 ``` bash
 qiime metadata tabulate \
 --m-input-file $PWD/analysis/16S/16S_denoising-stats.qza \
@@ -99,4 +100,27 @@ qiime feature-table summarize \
 --i-table $PWD/analysis/16S/filtered/16S_filtered-table.qza \
 --o-visualization $PWD/analysis/16S/filtered/16S_filtered-table-summary.qzv
 ```
+&nbsp;
+#### Phylogeny
+``` bash
+qiime alignment mafft \
+--i-sequences $PWD/analysis/16S/filtered/16S_filtered-rep-seqs.qza \
+--o-alignment $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned.qza
+
+qiime alignment mask \
+--i-alignment $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned.qza \
+--o-masked-alignment $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked.qza
+
+qiime phylogeny fasttree \
+--i-alignment $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked.qza \
+--o-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree.qza
+
+qiime phylogeny midpoint-root \
+--i-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree.qza \
+--o-rooted-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza
+```
+> Repeat commands above with ITS files.
+&nbsp;
+#### Taxonomy
+
 &nbsp;
