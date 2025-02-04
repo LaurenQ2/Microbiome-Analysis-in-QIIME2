@@ -8,7 +8,7 @@
   + Phylogeny with MAFFT and FastTree, 
   + 16S taxonomy with Greengenes2,
   + ITS taxonomy with UNITE,
-  + Taxonomy barplots
+  + Taxonomy barplots,
   + Core diversity metrics
 
 * Additional diversity visualizations were produced using R and the `QIIME2R` suite of packages and tools. Additional .R code will be linked in a future update.
@@ -179,6 +179,7 @@ qiime tools export \
 --input-path $PWD/analysis/16S/taxonomy/16S_taxonomy.qza \
 --output-path $PWD/analysis/16S/taxonomy
 ```
+&nbsp;
 * Create a barplot visualization of your taxonomy data.
 * This barplot, and the exportable .csv file, is helpful for identifying differences in  taxonomic distribution between samples.
 ``` bash
@@ -193,5 +194,82 @@ qiime tools export \
 * Classifier used was UNITE
 * Reference databases downloaded at <https://doi.org/10.15156/BIO/2959339>
 * Specific pre-trained reference database used: `unite_ver10_dynamic_all_04.04.2024-Q2-2024.5.qza`
- 
+> Run classifier on ITS input reads from your study.
+``` bash
+ qiime feature-classifier classify-sklearn \
+--i-classifier $PWD/analysis/unite_ver10_dynamic_all_04.04.2024-Q2-2024.5.qza \
+--i-reads $PWD/analysis/ITS/filtered/ITS_filtered-rep-seqs.qza \
+--o-classification $PWD/analysis/ITS/taxonomy/ITS_taxonomy.qza
+```
+&nbsp;
+> Export a 'taxonomy.tsv' file to look at classification and confidence scores, and create a barplot/.csv of taxonomy distribution within each sample. 
+``` bash
+qiime tools export \
+--input-path $PWD/analysis/ITS/taxonomy/ITS_taxonomy.qza \
+--output-path $PWD/analysis/ITS/taxonomy
 
+qiime taxa barplot \
+--i-table $PWD/analysis/ITS/filtered/ITS_filtered-table.qza \
+--i-taxonomy $PWD/analysis/ITS/taxonomy/ITS_taxonomy.qza \
+--m-metadata-file $PWD/fastQ/metadata_ITS.tsv \
+--o-visualization $PWD/analysis/ITS/taxonomy/ITS_taxa-barplot.qzv
+```
+&nbsp;
+#### Taxonomy-based filtering to remove mitochondria and chloroplasts
+* In my experience this didn't alter sequence counts, but it may be that these were rare enough in my samples that they were removed when rare ASVs were removed. I present these commands in case they are relevant to future data.
+``` bash
+qiime taxa filter-table \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table.qza \
+--i-taxonomy $PWD/analysis/16S/taxonomy/16S_taxonomy.qza \
+--p-exclude mitochondria,chloroplast \
+--o-filtered-table $PWD/analysis/16S/filtered/16S_filtered-table-no-contam.qza
+
+qiime taxa filter-seqs \
+--i-sequences $PWD/analysis/16S/filtered/16S_filtered-rep-seqs.qza \
+--i-taxonomy $PWD/analysis/16S/taxonomy/16S_taxonomy.qza \
+--p-exclude mitochondria,chloroplast \
+--o-filtered-sequences $PWD/analysis/16S/filtered/16S_filtered-rep-seqs-no-contam.qza
+```
+> check sequence counts
+``` bash
+qiime feature-table summarize \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table-no-contam.qza \
+--o-visualization $PWD/analysis/16S/filtered/16S_filtered-table-no-contam-summary.qzv
+```
+&nbsp;
+#### Diversity
+* **This core metrics command generates a suite of calculated diversity metrics including [(for a full list of command parameters and output click here)](https://docs.qiime2.org/2024.10/plugins/available/diversity/core-metrics-phylogenetic/):** 
+  + Shannon diversity, 
+  + Faith's Phylogenetic Diversity, 
+  + Pielou's evenness, 
+  + Bray-Curtis distance matrix, 
+  + Unweighted Unifrac distance matrix,
+  + Weighted Unifrac distance matrix,
+  + Bray-Curtis PCoA results,
+  + Unweighted Unifrac PCoA results,
+  + Weighted Unifrac PCoA results
+
+* Use max-depth from rarefaction step for p-sampling depth
+
+``` bash
+qiime diversity core-metrics-phylogenetic \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table-no-contam.qza \
+--i-phylogeny $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza \
+--p-sampling-depth 47385 \
+--m-metadata-file $PWD/fastQ/metadata_16S.tsv \
+--output-dir $PWD/analysis/16S/diversity
+```
+> Generate 'alpha-diversity.tsv' files of any of the alpha diversity values. 'shannon_vector.qza' is shown as an example here, but you can also use this with 'faith_pd_vector.qza' and 'evenness_vector.qza'.
+``` bash
+qiime tools export \
+--input-path $PWD/analysis/16S/diversity/shannon_vector.qza \
+--output-path $PWD/analysis/16S/diversity/shannon-diversity
+```
+> Create boxplots with metadata so that you can compare different variables.
+>  Similar to above, this command can be used with any of the alpha diversity values. 'shannon_vector.qza' is shown as an example here, but you can also use this with 'faith_pd_vector.qza' and 'evenness_vector.qza'.
+``` bash
+qiime diversity alpha-group-significance \
+--i-alpha-diversity $PWD/analysis/16S/diversity/shannon_vector.qza \
+--m-metadata-file $PWD/fastQ/metadata_16S.tsv \
+--o-visualization $PWD/analysis/16S/diversity/shannon-diversity/16S_shannon-compare-groups.qzv
+```
