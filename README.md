@@ -1,5 +1,7 @@
-## This tutorial presents a QIIME2 data analysis pipeline with 16S (bacterial) and ITS (fungal) sequences from a soil sampling study.
-
+## This tutorial presents a QIIME2 data analysis pipeline that can be used with 16S (bacterial) and ITS (fungal) sequences from a soil sampling study.
+### 16S is used as an example in all commands where the same code is used for both 16S and ITS
+&nbsp;
+#### Commands with separate 16S and ITS pipelines are DADA2 and taxonomic classification 
 * **Featured commands:** 
   + Importing, 
   + Filtering with DADA2, 
