@@ -1,7 +1,6 @@
 ## This tutorial presents a QIIME2 data analysis pipeline that can be used with 16S (bacterial) and ITS (fungal) sequences from a soil sampling study.
-### 16S is used as an example in all commands where the same code is used for both 16S and ITS
-&nbsp;
-#### Commands with separate 16S and ITS pipelines are DADA2 and taxonomic classification 
+
+### Commands with separate 16S and ITS pipelines are: DADA2 and taxonomic classification. 
 * **Featured commands:** 
   + Importing, 
   + Filtering with DADA2, 
@@ -13,13 +12,15 @@
   + Core diversity metrics
 
 * Additional diversity visualizations were produced using R and the `QIIME2R` suite of packages and tools. Additional .R code will be linked in a future update.
-
+  
+#### Reference code provided in this ReadMe.md is a truncated version of the full code; [that file can be found](https://github.com/LaurenQ2/Microbiome-Analysis-in-QIIME2/blob/main/microbiome-analysis-w-qiime2.sh)  in the main directory.  
+#### Note on the reference code: 16S is used as an example in all commands where the same code is used for both 16S and ITS.
+&nbsp;
 #### First, let's set the stage. Load the QIIME2 package.
 ``` bash
 #!/bin/bash
 module load qiime2/2024.5
 ```
-&nbsp;
 #### Sequence data was received from the sequencing lab trimmed, demultiplexed, and zipped. In these first couple steps we'll unzip, import the files, and run a quality check
 
 ``` bash
