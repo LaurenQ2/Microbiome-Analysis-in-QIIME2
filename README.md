@@ -27,12 +27,11 @@ module load qiime2/2024.5
 unzip -d $PWD/raw_data/fastq_trimmed.zip
 gunzip $PWD/raw_data/unZipped/filepath_R1.fastq.gz > $PWD/fastQ/filepath_R1.fq
 ```
-&nbsp;
 > In order to import these sequencing files we need to know whether they have a Phred quality score of 33 or 64. This code will check the Phred quality score:
 ``` bash
 vsearch --fastq_chars $PWD/fastQ/filepath_R1.fastq
 ```
-> Import the files.
+> Link forward and reverse read paths with other sample metadata in a metadata.tsv file, then import the files.
 ``` bash
 qiime tools import \
 --type 'SampleData[PairedEndSequencesWithQuality]' \
@@ -47,6 +46,7 @@ qiime tools import \
 --i-data $PWD/fastQ/16S_paired-end-demux.qza \
 --o-visualization $PWD/fastQ/16S_paired-end-demux.qzv
 ```
+&nbsp;
 #### DADA2 16S Bacterial Filtering
 ``` bash
 qiime dada2 denoise-paired \
@@ -60,6 +60,7 @@ qiime dada2 denoise-paired \
 --o-representative-sequences $PWD/analysis/16S/16S_rep-seqs.qza \
 --o-denoising-stats $PWD/analysis/16S/16S_denoising-stats.qza
 ```
+&nbsp;
 #### DADA2 ITS Fungal Filtering
 ``` bash
 qiime dada2 denoise-paired \
@@ -75,7 +76,6 @@ qiime dada2 denoise-paired \
 --o-representative-sequences $PWD/analysis/ITS/ITS_rep-seqs.qza \
 --o-denoising-stats $PWD/analysis/ITS/ITS_denoising-stats.qza
 ```
-&nbsp;
 > Create data visualizations from the output files generated in the last step.
 ``` bash
 qiime metadata tabulate \
@@ -105,6 +105,12 @@ qiime feature-table summarize \
 ```
 &nbsp;
 #### Phylogeny
+* **Steps:** 
+  + Sequence alignment with MAFFT,   
+  + filtering with mask 
+  + Phylogeny built with FastTree,
+  + Root the tree, download the .qzv file, and generate a phylogeny visualization by going to the website <https://itol.embl.de/upload.cgi>.
+
 ``` bash
 qiime alignment mafft \
 --i-sequences $PWD/analysis/16S/filtered/16S_filtered-rep-seqs.qza \
@@ -122,7 +128,7 @@ qiime phylogeny midpoint-root \
 --i-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree.qza \
 --o-rooted-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza
 ```
-> Repeat commands above with ITS files.
+> Repeat above commands with ITS files.
 &nbsp;
 #### Taxonomy
 
