@@ -40,7 +40,7 @@ qiime tools import \
 --input-format PairedEndFastqManifestPhred33V2
 ```
 > Summarize the imported file stats. \
-> These .qzv visualization files can be viewed in the [QIIME2 viewer.](https:/view.qiime2.org)
+> These .qzv visualization files can be viewed in the [QIIME2 visualizer.](https://view.qiime2.org)
 ``` bash
  qiime demux summarize \
 --i-data $PWD/fastQ/16S_paired-end-demux.qza \
@@ -128,8 +128,70 @@ qiime phylogeny midpoint-root \
 --i-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree.qza \
 --o-rooted-tree $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza
 ```
-> Repeat above commands with ITS files.
 &nbsp;
-#### Taxonomy
+#### Rarefaction curves
+* Set max-depth to the maximum number of sequences in your least populated sample.
+* Remove metadata file in second command below to separate individual sample curves in [the QIIME2 visualizer.](https://view.qiime2.org/)
+``` bash
+qiime diversity alpha-rarefaction \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table.qza \
+--p-max-depth 47385 \
+--p-steps 20 \
+--i-phylogeny $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza \
+--m-metadata-file $PWD/fastQ/metadata_16S.tsv \
+--o-visualization $PWD/analysis/16S/rarefaction/16S_rarefaction_curves.qzv
 
+qiime diversity alpha-rarefaction \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table.qza \
+--p-max-depth 47385 \
+--p-steps 20 \
+--i-phylogeny $PWD/analysis/16S/phylogeny/16S_filtered-rep-seqs-aligned_masked_tree_rooted.qza \
+--o-visualization $PWD/analysis/16S/rarefaction/16S_rarefaction_curves_each_curve.qzv
+```
 &nbsp;
+#### Taxonomy 16S 
+* Classifier used was Greengenes2
+* Reference databases downloaded at <http://ftp.microbio.me/greengenes_release/2022.10/>
+* Specific reference databases used: `2022.10.backbone.full-length.fna.qza` and `2022.10.backbone.tax.qza`
+> First, install the Greengenes2 program.
+``` bash
+module load qiime2/2024.5
+pip install q2-greengenes2
+```
+> Next, train the classifier.
+``` bash
+qiime feature-classifier fit-classifier-naive-bayes \
+--i-reference-reads $PWD/analysis/2022.10.backbone.full-length.fna.qza \
+--i-reference-taxonomy $PWD/analysis/2022.10.backbone.tax.qza \
+--o-classifier $PWD/analysis/2022.10.backbone.full-length.nb.qza
+```
+> Then, run the classifier on the input reads from your study.
+``` bash
+ qiime feature-classifier classify-sklearn \
+--i-classifier $PWD/analysis/2022.10.backbone.full-length.nb.qza \
+--i-reads $PWD/analysis/16S/filtered/16S_filtered-rep-seqs.qza \
+--o-classification $PWD/analysis/16S/taxonomy/16S_taxonomy.qza
+```
+> Export the output file to look at the classifications and confidence scores.
+> Output file will be named 'taxonomy.tsv'.
+``` bash
+qiime tools export \
+--input-path $PWD/analysis/16S/taxonomy/16S_taxonomy.qza \
+--output-path $PWD/analysis/16S/taxonomy
+```
+* Create a barplot visualization of your taxonomy data.
+* This barplot, and the exportable .csv file, is helpful for identifying differences in  taxonomic distribution between samples.
+``` bash
+ qiime taxa barplot \
+--i-table $PWD/analysis/16S/filtered/16S_filtered-table.qza \
+--i-taxonomy $PWD/analysis/16S/taxonomy/16S_taxonomy.qza \
+--m-metadata-file $PWD/fastQ/metadata_16S.tsv \
+--o-visualization $PWD/analysis/16S/taxonomy/16S_taxa-barplot.qzv
+```
+&nbsp;
+#### Taxonomy ITS 
+* Classifier used was UNITE
+* Reference databases downloaded at <https://doi.org/10.15156/BIO/2959339>
+* Specific pre-trained reference database used: `unite_ver10_dynamic_all_04.04.2024-Q2-2024.5.qza`
+ 
+
